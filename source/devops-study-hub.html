@@ -1,0 +1,459 @@
+<div id="app-root">
+<style>
+  #app-root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel2: #1e222b;
+    --line: #2b303b;
+    --text: #e6e9ef;
+    --muted: #969db0;
+    --accent: #4f9cf9;
+    --accent2: #37d399;
+    --warn: #f5a623;
+    --done: #37d399;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.55;
+    padding: 18px 14px 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+  }
+  #app-root * { box-sizing: border-box; }
+  #app-root h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: -0.3px; }
+  #app-root h2 { font-size: 15px; margin: 0 0 10px; letter-spacing: 0.4px; text-transform: uppercase; color: var(--muted); }
+  #app-root p { margin: 0 0 10px; }
+  .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+
+  .bar-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 14px; position: sticky; top: 0; z-index: 5; }
+  .bar-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; margin-bottom: 8px; }
+  .bar-track { height: 8px; background: var(--panel2); border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); width: 0%; transition: width .3s ease; }
+  .storage-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 110px; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel); color: var(--muted); font-size: 13px; cursor: pointer; text-align: center; }
+  .tab.on { background: var(--accent); border-color: var(--accent); color: #06121f; font-weight: 600; }
+
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .focus-card { border-color: var(--accent); }
+  .eyebrow { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  .lesson-title { font-size: 18px; font-weight: 650; margin-bottom: 6px; letter-spacing: -0.2px; }
+  .goal { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+
+  .label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin: 14px 0 7px; }
+  .res { display: block; padding: 10px 12px; background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; margin-bottom: 7px; text-decoration: none; color: var(--text); font-size: 14px; }
+  .res:hover { border-color: var(--accent); }
+  .res .type { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); margin-right: 8px; }
+  .res .arrow { float: right; color: var(--muted); }
+  .free { color: var(--accent2); font-size: 11px; margin-left: 6px; }
+  .paid { color: var(--warn); font-size: 11px; margin-left: 6px; }
+
+  .do, .doneif { background: var(--panel2); border-left: 3px solid var(--accent); padding: 10px 12px; border-radius: 0 8px 8px 0; font-size: 14px; margin-bottom: 8px; }
+  .doneif { border-left-color: var(--accent2); }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { flex: 1; min-width: 120px; padding: 12px; border-radius: 9px; border: 1px solid var(--line); background: var(--panel2); color: var(--text); font-size: 14px; cursor: pointer; }
+  .btn.primary { background: var(--accent2); border-color: var(--accent2); color: #05231a; font-weight: 650; }
+  .btn:hover { border-color: var(--accent); }
+
+  .stage { margin-bottom: 10px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel); }
+  .stage-head { padding: 13px 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .stage-name { font-weight: 620; font-size: 15px; }
+  .stage-weeks { font-size: 12px; color: var(--muted); }
+  .stage-count { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .stage-body { display: none; padding: 0 12px 12px; }
+  .stage.open .stage-body { display: block; }
+  .week-head { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin: 14px 0 8px; }
+
+  .row { display: flex; gap: 11px; align-items: flex-start; padding: 10px; border-radius: 9px; background: var(--panel2); margin-bottom: 6px; cursor: pointer; }
+  .row:hover { outline: 1px solid var(--line); }
+  .box { width: 20px; height: 20px; flex-shrink: 0; border: 2px solid var(--line); border-radius: 5px; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 13px; color: transparent; }
+  .row.done .box { background: var(--done); border-color: var(--done); color: #05231a; }
+  .row.done .row-title { text-decoration: line-through; color: var(--muted); }
+  .row-title { font-size: 14px; }
+  .row-sub { font-size: 12px; color: var(--muted); }
+
+  .note { font-size: 13px; color: var(--muted); background: var(--panel2); border: 1px solid var(--line); border-radius: 9px; padding: 12px; margin-bottom: 12px; }
+  .warn-box { border-color: var(--warn); }
+  .warn-box strong { color: var(--warn); }
+  ul { margin: 6px 0; padding-left: 20px; }
+  li { margin-bottom: 5px; font-size: 14px; }
+  .reset { background: none; border: none; color: var(--muted); font-size: 11px; text-decoration: underline; cursor: pointer; padding: 0; }
+</style>
+
+<h1>DevOps &amp; AWS — 16 Week Study Hub</h1>
+<div class="sub">One lesson a day. 1.5–2 hours. Nothing skipped ahead.</div>
+
+<div class="bar-wrap">
+  <div class="bar-top"><span id="prog-label">Loading…</span><span id="prog-pct">0%</span></div>
+  <div class="bar-track"><div class="bar-fill" id="prog-fill"></div></div>
+  <div class="storage-note" id="storage-note">Checking saved progress…</div>
+</div>
+
+<div class="tabs">
+  <div class="tab on" data-view="today">Today's lesson</div>
+  <div class="tab" data-view="plan">Full plan</div>
+  <div class="tab" data-view="setup">Setup &amp; rules</div>
+</div>
+
+<div id="view-today"></div>
+<div id="view-plan" style="display:none"></div>
+<div id="view-setup" style="display:none"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 1. RESOURCE REGISTRY ---------- */
+  var R = {
+    wsl:        ["Install WSL (Windows only)", "https://learn.microsoft.com/en-us/windows/wsl/install", "tool", "free"],
+    vscode:     ["VS Code editor", "https://code.visualstudio.com/", "tool", "free"],
+    missing:    ["MIT: The Missing Semester", "https://missing.csail.mit.edu/", "course", "free"],
+    linuxjourney:["Linux Journey", "https://linuxjourney.com/", "read", "free"],
+    bandit:     ["OverTheWire: Bandit", "https://overthewire.org/wargames/bandit/", "lab", "free"],
+    explainshell:["explainshell.com", "https://explainshell.com/", "tool", "free"],
+    shellcheck: ["ShellCheck", "https://www.shellcheck.net/", "tool", "free"],
+    progit:     ["Pro Git (free book + PDF)", "https://git-scm.com/book/en/v2", "read", "free"],
+    lgb:        ["Learn Git Branching (visual)", "https://learngitbranching.js.org/", "lab", "free"],
+    ghstart:    ["GitHub: Get started", "https://docs.github.com/en/get-started", "read", "free"],
+    ghactions:  ["GitHub Actions docs", "https://docs.github.com/en/actions", "read", "free"],
+    dockerstart:["Docker: Get started", "https://docs.docker.com/get-started/", "course", "free"],
+    dockerdocs: ["Docker documentation", "https://docs.docker.com/", "read", "free"],
+    pwd:        ["Play with Docker (browser)", "https://labs.play-with-docker.com/", "lab", "free"],
+    trivy:      ["Trivy image scanner", "https://github.com/aquasecurity/trivy", "tool", "free"],
+    k8stut:     ["Kubernetes tutorials", "https://kubernetes.io/docs/tutorials/", "course", "free"],
+    kind:       ["kind — local Kubernetes", "https://kind.sigs.k8s.io/", "tool", "free"],
+    killercoda: ["Killercoda browser labs", "https://killercoda.com/", "lab", "free"],
+    kodekloud:  ["KodeKloud", "https://kodekloud.com/", "course", "paid"],
+    tf:         ["Terraform tutorials", "https://developer.hashicorp.com/terraform/tutorials", "course", "free"],
+    tfaws:      ["Terraform AWS provider docs", "https://registry.terraform.io/providers/hashicorp/aws/latest/docs", "read", "free"],
+    awsfree:    ["AWS Free Tier", "https://aws.amazon.com/free/", "tool", "free"],
+    skillbuilder:["AWS Skill Builder (600+ free courses)", "https://skillbuilder.aws/", "course", "free"],
+    awstraining:["AWS Training &amp; Certification", "https://aws.amazon.com/training/", "course", "free"],
+    workshops:  ["AWS Workshops catalog", "https://builder.aws.com/build/workshops", "lab", "free"],
+    workshops2: ["AWS Workshop Studio", "https://catalog.workshops.aws/", "lab", "free"],
+    awsdocs:    ["AWS documentation", "https://docs.aws.amazon.com/", "read", "free"],
+    awscli:     ["AWS CLI docs", "https://docs.aws.amazon.com/cli/", "read", "free"],
+    saaguide:   ["Official SAA-C03 exam guide", "https://docs.aws.amazon.com/aws-certification/latest/solutions-architect-associate-03/solutions-architect-associate-03.html", "read", "free"],
+    cantrill:   ["Cantrill SAA course (~$40)", "https://learn.cantrill.io/p/aws-certified-solutions-architect-associate-saa-c03", "course", "paid"],
+    nginx:      ["nginx documentation", "https://nginx.org/en/docs/", "read", "free"],
+    certbot:    ["Certbot / Let's Encrypt", "https://certbot.eff.org/", "tool", "free"],
+    prom:       ["Prometheus docs", "https://prometheus.io/docs/introduction/overview/", "read", "free"],
+    grafana:    ["Grafana tutorials", "https://grafana.com/tutorials/", "course", "free"],
+    roadmap:    ["roadmap.sh — DevOps map", "https://roadmap.sh/devops", "read", "free"],
+    roadmapproj:["roadmap.sh — DevOps projects", "https://roadmap.sh/devops/projects", "lab", "free"],
+    devopscube: ["List of hands-on lab sites", "https://devopscube.com/websites-to-practice-devops/", "read", "free"]
+  };
+
+  /* ---------- 2. CURRICULUM ---------- */
+  var STAGES = [
+    { name: "Stage 1 — Get comfortable", weeks: "Weeks 1–3", note: "No AWS yet. Just the terminal, Git, and one small server. Do not skip ahead." },
+    { name: "Stage 2 — Linux & networking", weeks: "Weeks 4–6", note: "The stuff every interview digs into. Slow down here — it pays for the rest." },
+    { name: "Stage 3 — Containers", weeks: "Weeks 7–8", note: "Docker before cloud. It makes everything after this easier." },
+    { name: "Stage 4 — AWS, click first then code", weeks: "Weeks 9–12", note: "Click it in the console until you understand it, then automate it with Terraform." },
+    { name: "Stage 5 — Automation & operations", weeks: "Weeks 13–16", note: "Pipelines, Kubernetes, monitoring, and one project worth showing an employer." }
+  ];
+
+  var L = [
+    // WEEK 1
+    {s:0,w:1,t:"What this job actually is + set up your machine",min:90,goal:"Understand what DevOps/cloud work involves, and get a working terminal.",r:["roadmap","wsl","vscode"],do:"Windows: install WSL with Ubuntu. Mac: open Terminal. Install VS Code. Skim the DevOps roadmap for 15 min — do not try to learn it, just see the shape.",dn:"You can open a Linux terminal and type <code>whoami</code> and get an answer."},
+    {s:0,w:1,t:"Moving around the terminal",min:90,goal:"Navigate folders and files without a mouse.",r:["missing","linuxjourney","explainshell"],do:"Missing Semester lecture 1 (Shell). Learn: pwd, ls, cd, mkdir, touch, cp, mv, rm, man. Paste any command you don't understand into explainshell.",dn:"You can create a folder, make a file in it, copy it, and delete it — from memory."},
+    {s:0,w:1,t:"Files, text and pipes",min:90,goal:"Read files and chain commands together.",r:["missing","linuxjourney"],do:"Learn cat, less, head, tail, grep, wc, and the > >> | operators. Missing Semester lecture 2.",dn:"You can run <code>cat file.txt | grep word | wc -l</code> and explain what each part does."},
+    {s:0,w:1,t:"Permissions and users",min:90,goal:"Know why 'permission denied' happens and how to fix it properly.",r:["linuxjourney","missing"],do:"Learn chmod, chown, sudo, and read rwx notation. Practice: make a script executable.",dn:"You can explain what 755 and 644 mean without looking it up."},
+    {s:0,w:1,t:"REVIEW — play Bandit levels 0–10",min:120,goal:"Prove week 1 stuck by solving real puzzles.",r:["bandit"],do:"Work through Bandit levels 0 to 10. If you get stuck for more than 20 minutes, look up a walkthrough — then redo it yourself without help.",dn:"Level 10 password in your notes file."},
+
+    // WEEK 2
+    {s:0,w:2,t:"What version control is, and your first repo",min:90,goal:"Stop losing work. Start a permanent record of your learning.",r:["progit","ghstart"],do:"Install git. Read Pro Git chapters 1–2. Create a repo called my-devops-journey with a README.",dn:"<code>git init</code>, <code>git add</code>, <code>git commit</code> done locally."},
+    {s:0,w:2,t:"Push to GitHub",min:90,goal:"Get your work online where employers can see it.",r:["ghstart","progit"],do:"Create a GitHub account, set up an SSH key, push your repo. Write your week 1 notes into it.",dn:"Your repo is visible at github.com/yourname/my-devops-journey."},
+    {s:0,w:2,t:"Branches and merges",min:90,goal:"Work on changes without breaking what already works.",r:["lgb","progit"],do:"Play Learn Git Branching — Main levels 1 through 4. Then branch, change, merge in your own repo.",dn:"You created a branch, merged it, and can explain the difference between merge and rebase."},
+    {s:0,w:2,t:"Undoing mistakes",min:90,goal:"Never be scared of git again.",r:["progit","lgb"],do:"Learn: .gitignore, git log, git diff, git restore, git revert, git reflog. Deliberately break something and recover it.",dn:"You recovered a commit you deleted on purpose."},
+    {s:0,w:2,t:"REVIEW — publish your notes properly",min:120,goal:"Build the habit of documenting everything you learn.",r:["progit"],do:"Restructure your journey repo: one markdown file per week. Write a real README explaining what the repo is.",dn:"Repo is public, tidy, and has 10+ commits."},
+
+    // WEEK 3
+    {s:0,w:3,t:"What a server actually is",min:90,goal:"Understand the thing you'll spend four months managing.",r:["linuxjourney","awsfree"],do:"Read about servers, VMs, and hosting. Then get a Linux machine: either a small VPS (~€5/month) or an AWS free-tier EC2 instance. Do NOT skip billing alerts — see Setup & rules tab.",dn:"You have a Linux server you can reach over the internet."},
+    {s:0,w:3,t:"SSH — connecting safely",min:90,goal:"Log into your server the way professionals do.",r:["missing","linuxjourney"],do:"Generate an SSH key pair, add the public key to the server, log in with the key. Then disable password login.",dn:"You log in with <code>ssh user@your-server</code> and no password prompt."},
+    {s:0,w:3,t:"Install a web server",min:90,goal:"Put something on the internet that you built.",r:["nginx","linuxjourney"],do:"Update packages, install nginx, replace the default page with your own HTML.",dn:"Typing your server's IP in a browser shows your page."},
+    {s:0,w:3,t:"Processes, services and logs",min:90,goal:"Know what's running and why it stopped.",r:["linuxjourney","missing"],do:"Learn ps, top, systemctl status/start/stop/enable, journalctl. Stop nginx, see the site die, start it, read the logs.",dn:"You can explain what systemd does in one sentence."},
+    {s:0,w:3,t:"PROJECT 1 — your first live server",min:120,goal:"First portfolio piece.",r:["progit","nginx"],do:"Write up in your repo: how you created the server, secured SSH, installed nginx, and what broke. Include the commands.",dn:"A README a stranger could follow to reproduce your setup."},
+
+    // WEEK 4
+    {s:1,w:4,t:"The Linux filesystem, properly",min:90,goal:"Stop guessing where things live.",r:["linuxjourney","missing"],do:"Learn /etc, /var, /home, /usr, /tmp, /opt. Master find and grep -r.",dn:"You can find any config file on your server without searching Google."},
+    {s:1,w:4,t:"Users, groups, sudo",min:90,goal:"Control who can do what.",r:["linuxjourney"],do:"Create a second user, add them to a group, give limited sudo. Log in as them and test the limits.",dn:"A user who can restart nginx but cannot delete /etc."},
+    {s:1,w:4,t:"Packages and services",min:90,goal:"Install, update, and run software reliably.",r:["linuxjourney","devopscube"],do:"apt install/remove/update, then write your own systemd unit file for a small script that runs on boot.",dn:"Your service survives a server reboot."},
+    {s:1,w:4,t:"Disks, logs and scheduled jobs",min:90,goal:"Keep a server from filling up and dying.",r:["linuxjourney"],do:"Learn df, du, journalctl -u, log rotation, cron and systemd timers. Schedule a job that writes the date to a file every 5 minutes.",dn:"You found the biggest folder on your server and explained why it's big."},
+    {s:1,w:4,t:"REVIEW — Bandit levels 10–20",min:120,goal:"Harder puzzles, same fundamentals.",r:["bandit"],do:"Continue Bandit. These levels get into compression, encoding and networking — that's the point.",dn:"Level 20 reached, notes updated."},
+
+    // WEEK 5
+    {s:1,w:5,t:"IP addresses and subnets",min:90,goal:"The single most useful theory for AWS later.",r:["missing","linuxjourney"],do:"Learn IPv4, private vs public ranges, CIDR notation. Do 20 subnetting exercises by hand on paper. Yes, on paper.",dn:"You can say how many usable addresses are in a /24 and a /26 instantly."},
+    {s:1,w:5,t:"DNS — how names become addresses",min:90,goal:"Understand the most common cause of outages.",r:["linuxjourney","missing"],do:"Learn A, CNAME, MX, TXT records and TTL. Use dig and nslookup on 5 websites. Buy a cheap domain (~€10/yr) and point it at your server.",dn:"Your domain loads your nginx page."},
+    {s:1,w:5,t:"Ports, TCP and firewalls",min:90,goal:"Know why something can't connect.",r:["linuxjourney","missing"],do:"Learn ports, TCP handshake, ss, netstat, curl, telnet. Set up ufw: allow 22, 80, 443, block the rest.",dn:"You blocked a port, proved it was blocked with curl, then unblocked it."},
+    {s:1,w:5,t:"HTTPS and certificates",min:90,goal:"Every real site needs this. Do it once, understand it forever.",r:["certbot","nginx"],do:"Install certbot, get a Let's Encrypt certificate for your domain, force HTTPS redirect in nginx.",dn:"Padlock in the browser on your own domain."},
+    {s:1,w:5,t:"PROJECT 2 — secured site on your own domain",min:120,goal:"Second portfolio piece.",r:["progit"],do:"Document the whole chain: domain → DNS → server → firewall → nginx → TLS. Draw the request path as a simple diagram.",dn:"A write-up explaining what happens between typing the URL and seeing the page."},
+
+    // WEEK 6
+    {s:1,w:6,t:"Bash basics",min:90,goal:"Stop typing the same commands over and over.",r:["missing","explainshell"],do:"Variables, quoting, exit codes, $?, command substitution. Write a script that prints server disk usage nicely.",dn:"A script you run with ./script.sh that works."},
+    {s:1,w:6,t:"Logic and loops",min:90,goal:"Make scripts that make decisions.",r:["missing"],do:"if/else, for, while, case, functions. Write a script that checks if nginx is running and restarts it if not.",dn:"You killed nginx and your script brought it back."},
+    {s:1,w:6,t:"Writing scripts that don't betray you",min:90,goal:"The difference between a hobby script and a production script.",r:["shellcheck","missing"],do:"Learn set -euo pipefail, arguments ($1, $@), trap, and logging. Run every script through ShellCheck and fix all warnings.",dn:"ShellCheck reports zero issues on your scripts."},
+    {s:1,w:6,t:"Automating with timers and backups",min:90,goal:"Scheduled work that actually runs.",r:["linuxjourney","shellcheck"],do:"Write a backup script (tar a folder, keep last 7, delete older) and run it nightly via systemd timer.",dn:"7 backup files exist and the 8th one got deleted automatically."},
+    {s:1,w:6,t:"PROJECT 3 — one-command server build",min:150,goal:"Third portfolio piece, and the one that proves you get automation.",r:["progit","shellcheck"],do:"One bash script: fresh server → updated, firewalled, nginx installed, site deployed, TLS on, backups scheduled. Destroy your server and rebuild it with the script.",dn:"Blank server to working HTTPS site in under 10 minutes, one command."},
+
+    // WEEK 7
+    {s:2,w:7,t:"What a container is (and isn't)",min:90,goal:"Understand the idea before the commands.",r:["dockerstart","pwd"],do:"Install Docker. Run: docker run hello-world, then docker run -it ubuntu bash. Poke around inside. Exit. Notice it's gone.",dn:"You can explain the difference between a VM and a container in two sentences."},
+    {s:2,w:7,t:"Images and your first Dockerfile",min:90,goal:"Build your own container image.",r:["dockerstart","dockerdocs"],do:"Learn images vs containers, layers, FROM/RUN/COPY/CMD. Write a Dockerfile for a tiny web app and build it.",dn:"<code>docker build -t myapp .</code> succeeds and <code>docker run</code> serves a page."},
+    {s:2,w:7,t:"Ports, volumes, environment variables",min:90,goal:"Make containers useful instead of disposable.",r:["dockerdocs","pwd"],do:"Learn -p, -v, -e. Run a container whose data survives a restart. Run a Postgres container with a password from an env var.",dn:"You deleted a container and its data was still there."},
+    {s:2,w:7,t:"Docker Compose — multiple containers",min:90,goal:"Run a real app stack with one command.",r:["dockerdocs"],do:"Write a docker-compose.yml with your app + a database + a volume + a network.",dn:"<code>docker compose up</code> starts both, and the app can reach the database."},
+    {s:2,w:7,t:"REVIEW — containerize your own project",min:120,goal:"Apply it to something that's yours.",r:["dockerdocs","progit"],do:"Take the site from Project 2 and put it in a container. Commit the Dockerfile.",dn:"Your site runs identically on your laptop and your server via Docker."},
+
+    // WEEK 8
+    {s:2,w:8,t:"Smaller, faster images",min:90,goal:"Professional image hygiene.",r:["dockerdocs"],do:"Learn multi-stage builds and slim/alpine base images. Cut your image size by at least half.",dn:"Before/after image sizes recorded in your notes."},
+    {s:2,w:8,t:"Safer containers",min:90,goal:"The security basics interviewers ask about.",r:["dockerdocs"],do:"Run as a non-root user, add a HEALTHCHECK, set memory/CPU limits, and stop using the :latest tag.",dn:"<code>docker exec ... whoami</code> does not return root."},
+    {s:2,w:8,t:"Scanning for vulnerabilities",min:90,goal:"Know what's inside what you ship.",r:["trivy"],do:"Install Trivy. Scan your image. Fix or document every HIGH and CRITICAL finding.",dn:"A scan report saved in your repo with your notes on each finding."},
+    {s:2,w:8,t:"Registries — storing images",min:90,goal:"Get images off your laptop.",r:["dockerdocs"],do:"Push your image to Docker Hub with proper version tags (v1.0.0, not latest). Pull it onto your server and run it there.",dn:"Your server runs an image it downloaded, not one it built."},
+    {s:2,w:8,t:"PROJECT 4 — containerized stack in production",min:150,goal:"Fourth portfolio piece.",r:["progit","dockerdocs"],do:"Your app + database running via Compose on your server, behind nginx with HTTPS, image pulled from a registry.",dn:"Site is live, containerized, and documented with a diagram."},
+
+    // WEEK 9
+    {s:3,w:9,t:"AWS account — set up safely FIRST",min:90,goal:"Avoid the surprise bill that ends most people's cloud learning.",r:["awsfree","awsdocs"],do:"Create the account. Then immediately: enable MFA on root, create an admin IAM user, stop using root, set a Budget alert at €10/€25/€50, turn on billing alerts.",dn:"You have a budget alarm email in your inbox confirming it's active."},
+    {s:3,w:9,t:"How AWS is organised",min:90,goal:"The map before the territory.",r:["skillbuilder","awstraining"],do:"Do AWS Cloud Practitioner Essentials on Skill Builder (free). Learn regions, availability zones, and the shared responsibility model.",dn:"You can name 3 regions and explain why AZs exist."},
+    {s:3,w:9,t:"IAM — permissions",min:120,goal:"The service that gates every other service.",r:["awsdocs","workshops"],do:"Learn users, groups, roles, policies. Create a role that an EC2 instance can assume to read one S3 bucket. Nothing more.",dn:"You wrote a JSON policy by hand and it worked."},
+    {s:3,w:9,t:"The AWS CLI",min:90,goal:"Leave the console behind for repetitive things.",r:["awscli","awsdocs"],do:"Install the CLI, configure a profile, list your S3 buckets and EC2 instances from the terminal.",dn:"<code>aws sts get-caller-identity</code> returns your user."},
+    {s:3,w:9,t:"REVIEW — free labs",min:120,goal:"Repetition on real AWS.",r:["workshops","workshops2"],do:"Pick one beginner (level 100) AWS workshop and complete it end to end. Delete everything afterwards.",dn:"Workshop finished, resources deleted, bill checked."},
+
+    // WEEK 10
+    {s:3,w:10,t:"EC2 — virtual servers",min:120,goal:"The same server skills, now in AWS.",r:["awsdocs","workshops"],do:"Launch an EC2 instance, configure a security group, connect via SSM Session Manager (not SSH keys). Install nginx via user-data.",dn:"An instance that serves a page the moment it boots, with no manual steps."},
+    {s:3,w:10,t:"Storage — EBS and AMIs",min:90,goal:"Where the data actually lives.",r:["awsdocs"],do:"Attach an extra EBS volume, format and mount it. Take a snapshot. Create a custom AMI from your instance.",dn:"You launched a new instance from your own AMI."},
+    {s:3,w:10,t:"S3 — object storage",min:90,goal:"The most used AWS service, and the most misconfigured.",r:["awsdocs","workshops"],do:"Create a bucket, block public access, upload files, host a static site, set a lifecycle rule. Read about famous S3 leaks.",dn:"A static site served from S3, and you can explain bucket policy vs IAM policy."},
+    {s:3,w:10,t:"CloudWatch — seeing what's happening",min:90,goal:"You can't fix what you can't see.",r:["awsdocs"],do:"Send EC2 logs to CloudWatch Logs, build a dashboard, create an alarm for high CPU that emails you.",dn:"You caused high CPU on purpose and received the alarm email."},
+    {s:3,w:10,t:"PROJECT 5 — your site on AWS",min:150,goal:"Fifth portfolio piece.",r:["progit","awsdocs"],do:"Move Project 4 onto AWS: EC2 for the app, S3 for static assets, CloudWatch alarm, Route 53 for the domain.",dn:"Live on AWS, with a cost estimate in the README."},
+
+    // WEEK 11
+    {s:3,w:11,t:"VPC — your own private network",min:120,goal:"Where your subnetting practice pays off.",r:["awsdocs","workshops"],do:"Build a VPC by hand: 2 AZs, public and private subnets, internet gateway, route tables.",dn:"You can draw your VPC from memory."},
+    {s:3,w:11,t:"Public vs private, and NAT",min:90,goal:"Keep servers off the public internet without breaking them.",r:["awsdocs"],do:"Put an instance in a private subnet. Give it outbound internet via NAT Gateway. Learn security groups vs NACLs. Warning: NAT Gateway costs money — delete it same day.",dn:"A private instance that can download updates but cannot be reached from outside."},
+    {s:3,w:11,t:"Load balancer and auto scaling",min:120,goal:"Handle traffic and failure like a real system.",r:["awsdocs","workshops"],do:"Put an Application Load Balancer in front of an Auto Scaling Group of 2 instances across 2 AZs. Terminate one instance and watch it heal.",dn:"You killed a server and the site stayed up."},
+    {s:3,w:11,t:"RDS — managed databases",min:90,goal:"Stop running databases by hand.",r:["awsdocs"],do:"Launch an RDS instance in private subnets, connect from your app instance only, enable automated backups. Read about Multi-AZ.",dn:"Your app talks to RDS and the database is unreachable from the internet."},
+    {s:3,w:11,t:"PROJECT 6 — proper 2-tier architecture",min:150,goal:"The classic architecture every AWS interview references.",r:["progit","awsdocs"],do:"ALB → Auto Scaling Group (private subnets) → RDS. Diagram it. Then destroy everything and check your bill.",dn:"A diagram plus a written explanation of every arrow on it."},
+
+    // WEEK 12
+    {s:3,w:12,t:"Why write infrastructure as code",min:90,goal:"The shift from clicking to describing.",r:["tf","tfaws"],do:"Install Terraform. Write a config that creates one S3 bucket. Run init, plan, apply, destroy. Read plan output carefully every time.",dn:"You created and destroyed a bucket without touching the console."},
+    {s:3,w:12,t:"Variables, outputs and state",min:120,goal:"The concept most beginners get wrong.",r:["tf"],do:"Add variables and outputs. Then move state to an S3 backend. Understand what happens if state is lost.",dn:"You can explain in one sentence what terraform.tfstate is for."},
+    {s:3,w:12,t:"Modules and repetition",min:120,goal:"Write once, reuse everywhere.",r:["tf","tfaws"],do:"Turn your VPC config into a module. Use for_each to create multiple subnets instead of copy-paste.",dn:"A module you call twice with different inputs."},
+    {s:3,w:12,t:"Safety nets",min:90,goal:"Catch mistakes before they cost money.",r:["tf","ghactions"],do:"Add terraform fmt and validate. Try tflint or checkov. Read a plan that would delete a database and notice it.",dn:"You spotted a destructive change in a plan before applying."},
+    {s:3,w:12,t:"PROJECT 7 — rebuild Project 6 in code",min:180,goal:"The single most valuable repo in your portfolio.",r:["progit","tf"],do:"Recreate the entire week 11 architecture in Terraform. Destroy it. Apply it again. Prove it's identical.",dn:"<code>terraform apply</code> builds the whole stack from nothing."},
+
+    // WEEK 13
+    {s:4,w:13,t:"What a pipeline is",min:90,goal:"Automate the boring path from code to production.",r:["ghactions"],do:"Create a GitHub Actions workflow that runs on every push and prints hello. Then make it run a linter.",dn:"A green checkmark on your commit."},
+    {s:4,w:13,t:"Build and test automatically",min:90,goal:"Catch broken code before it ships.",r:["ghactions"],do:"Add steps: install dependencies, run tests, fail the build on purpose, then fix it.",dn:"A red build you caused, and a green one you fixed."},
+    {s:4,w:13,t:"Build and push images from CI",min:120,goal:"No more building images on your laptop.",r:["ghactions","awsdocs"],do:"Workflow builds your Docker image, scans it, tags it with the commit SHA, and pushes to ECR.",dn:"An image in ECR tagged with a real commit hash."},
+    {s:4,w:13,t:"Deploy without storing passwords",min:120,goal:"The modern standard — know this name: OIDC.",r:["ghactions","awsdocs"],do:"Set up GitHub Actions to assume an AWS IAM role via OIDC instead of storing access keys. Then deploy your image.",dn:"Zero AWS secrets stored in GitHub, and deploys still work."},
+    {s:4,w:13,t:"PROJECT 8 — push to deploy",min:150,goal:"Eighth portfolio piece, and a great interview story.",r:["progit","ghactions"],do:"Change one line of code, push, and watch it reach production automatically. Document each pipeline stage.",dn:"A commit that reached the live site with no manual steps."},
+
+    // WEEK 14
+    {s:4,w:14,t:"Why Kubernetes exists",min:90,goal:"Understand the problem before the tool.",r:["k8stut","kind"],do:"Install kind and create a local cluster (free, no AWS bill). Read the Kubernetes basics tutorial.",dn:"<code>kubectl get nodes</code> shows a running node."},
+    {s:4,w:14,t:"Pods, deployments, services",min:120,goal:"The three objects that cover 80% of daily work.",r:["k8stut","killercoda"],do:"Deploy your app: a Deployment with 3 replicas and a Service in front. Scale to 5. Delete a pod and watch it come back.",dn:"You deleted a pod and Kubernetes replaced it."},
+    {s:4,w:14,t:"Config, secrets and health checks",min:120,goal:"Make deployments behave in the real world.",r:["k8stut","killercoda"],do:"Add a ConfigMap, a Secret, and liveness/readiness probes. Break the probe on purpose and see what happens.",dn:"You can explain the difference between liveness and readiness."},
+    {s:4,w:14,t:"Debugging Kubernetes",min:120,goal:"The actual job. This is what you get paid for.",r:["killercoda","k8stut"],do:"Learn kubectl describe, logs, exec, events. Break your deployment 4 ways (bad image, wrong port, missing secret, OOM) and fix each.",dn:"Notes listing each failure, the symptom, and the fix."},
+    {s:4,w:14,t:"PROJECT 9 — app on Kubernetes",min:150,goal:"Ninth portfolio piece.",r:["progit","k8stut"],do:"Your containerized app running on kind with configmaps, secrets, probes, and 3 replicas. All YAML in your repo.",dn:"Someone else could run <code>kubectl apply -f .</code> and get your app."},
+
+    // WEEK 15
+    {s:4,w:15,t:"What to measure",min:90,goal:"Monitoring that answers questions instead of decorating a screen.",r:["prom","grafana"],do:"Learn the four golden signals: latency, traffic, errors, saturation. Decide which 4 metrics matter for your app.",dn:"A written list of your 4 metrics and why each one matters."},
+    {s:4,w:15,t:"Prometheus and Grafana",min:120,goal:"The industry-standard open-source stack.",r:["prom","grafana"],do:"Run Prometheus and Grafana with Docker Compose, scrape your app, build one dashboard with your 4 metrics.",dn:"A dashboard showing real data from your app."},
+    {s:4,w:15,t:"Alerts worth waking up for",min:90,goal:"Alert on symptoms, not causes.",r:["prom","grafana"],do:"Create 2 alerts: one on error rate, one on response time. Trigger both deliberately.",dn:"Two alerts that fired for real reasons."},
+    {s:4,w:15,t:"Backups, restore and incident writing",min:120,goal:"The skill that separates juniors from people who get trusted.",r:["awsdocs","progit"],do:"Back up your database. Delete data on purpose. Restore it. Time it. Then write a blameless postmortem of the whole thing.",dn:"A written postmortem with timeline, cause, fix, and prevention."},
+    {s:4,w:15,t:"PROJECT 10 — you can see and recover",min:150,goal:"Tenth portfolio piece.",r:["progit","grafana"],do:"Dashboard + working alerts + a documented, tested restore procedure with measured recovery time.",dn:"A runbook someone else could follow at 3am."},
+
+    // WEEK 16
+    {s:4,w:16,t:"Plan the capstone",min:120,goal:"One project that ties everything together.",r:["roadmapproj","progit"],do:"Design it on paper first: Terraform-built AWS infra, containerized app, CI/CD pipeline, monitoring, backups. Draw the architecture before writing code.",dn:"An architecture diagram and a task list."},
+    {s:4,w:16,t:"Build the capstone — part 1",min:180,goal:"Infrastructure and pipeline.",r:["tf","ghactions"],do:"Terraform for all infrastructure, GitHub Actions for deployment via OIDC.",dn:"Infrastructure created from code, deploy pipeline green."},
+    {s:4,w:16,t:"Build the capstone — part 2",min:180,goal:"Operations and polish.",r:["grafana","awsdocs"],do:"Add monitoring, alerts, backups, and a cost breakdown. Then destroy and rebuild it once to prove it's reproducible.",dn:"Full rebuild from zero succeeded."},
+    {s:4,w:16,t:"Write it up so people understand it",min:120,goal:"Undocumented work doesn't count in a job search.",r:["progit"],do:"README with diagram, decisions and why you made them, cost, and what you'd do differently. Then write one public post about the hardest bug you hit.",dn:"A repo a hiring manager could understand in 3 minutes."},
+    {s:4,w:16,t:"Get job-ready",min:150,goal:"Convert 16 weeks into interviews.",r:["saaguide","cantrill","skillbuilder"],do:"Rewrite CV around outcomes, not tools. Link all 10 projects. Practice explaining each one out loud in 2 minutes. Decide whether to book the AWS Solutions Architect Associate exam — check the current exam code on the AWS site first.",dn:"CV sent to at least 5 real job postings."}
+  ];
+
+  /* ---------- 3. STATE + STORAGE ---------- */
+  var done = {};
+  var storageOK = false;
+  var KEY = "devops-hub-progress";
+
+  function saveProgress() {
+    if (!storageOK) return;
+    try { window.storage.set(KEY, JSON.stringify(done)); }
+    catch (e) { /* best effort */ }
+  }
+
+  function loadProgress(cb) {
+    var note = document.getElementById("storage-note");
+    if (typeof window.storage === "undefined" || !window.storage) {
+      note.innerHTML = "Progress is not saved in this view — tick boxes still work for this session. Print this page to PDF if you want a paper checklist.";
+      cb(); return;
+    }
+    window.storage.get(KEY).then(function (res) {
+      storageOK = true;
+      if (res && res.value) { try { done = JSON.parse(res.value); } catch (e) { done = {}; } }
+      note.innerHTML = 'Progress saves automatically. <button class="reset" id="reset-btn">reset all progress</button>';
+      cb();
+      var rb = document.getElementById("reset-btn");
+      if (rb) rb.onclick = function () {
+        if (confirm("Reset all 80 lessons to unchecked?")) { done = {}; saveProgress(); renderAll(); }
+      };
+    }).catch(function () {
+      storageOK = true;
+      note.innerHTML = 'Progress saves automatically. <button class="reset" id="reset-btn">reset all progress</button>';
+      cb();
+      var rb = document.getElementById("reset-btn");
+      if (rb) rb.onclick = function () {
+        if (confirm("Reset all 80 lessons to unchecked?")) { done = {}; saveProgress(); renderAll(); }
+      };
+    });
+  }
+
+  /* ---------- 4. RENDER HELPERS ---------- */
+  function esc(s) { return String(s); }
+
+  function resHTML(keys) {
+    return keys.map(function (k) {
+      var r = R[k];
+      if (!r) return "";
+      var tag = r[3] === "paid"
+        ? '<span class="paid">paid</span>'
+        : '<span class="free">free</span>';
+      return '<a class="res" href="' + r[1] + '" target="_blank" rel="noopener">' +
+             '<span class="type">' + r[2] + '</span>' + esc(r[0]) + tag +
+             '<span class="arrow">↗</span></a>';
+    }).join("");
+  }
+
+  function firstUndone() {
+    for (var i = 0; i < L.length; i++) { if (!done[i]) return i; }
+    return -1;
+  }
+
+  function renderProgress() {
+    var n = 0;
+    for (var k in done) { if (done[k]) n++; }
+    var pct = Math.round((n / L.length) * 100);
+    document.getElementById("prog-fill").style.width = pct + "%";
+    document.getElementById("prog-pct").textContent = pct + "%";
+    document.getElementById("prog-label").textContent = n + " of " + L.length + " lessons done";
+  }
+
+  function renderToday() {
+    var i = firstUndone();
+    var box = document.getElementById("view-today");
+    if (i === -1) {
+      box.innerHTML = '<div class="card focus-card"><div class="lesson-title">All 80 lessons complete.</div>' +
+        '<p class="goal">Sixteen weeks done. Now go apply for the jobs — the portfolio is the point, not the checkmarks.</p></div>';
+      return;
+    }
+    var l = L[i];
+    var st = STAGES[l.s];
+    box.innerHTML =
+      '<div class="card focus-card">' +
+        '<div class="eyebrow">Week ' + l.w + ' · Lesson ' + (i + 1) + ' of ' + L.length + '</div>' +
+        '<div class="lesson-title">' + esc(l.t) + '</div>' +
+        '<div class="goal">' + esc(l.goal) + '</div>' +
+        '<div class="meta">' + esc(st.name) + ' · about ' + l.min + ' minutes</div>' +
+        '<div class="label">Materials — click to open</div>' + resHTML(l.r) +
+        '<div class="label">Do this</div><div class="do">' + esc(l.do) + '</div>' +
+        '<div class="label">You are done when</div><div class="doneif">' + esc(l.dn) + '</div>' +
+        '<div class="btn-row">' +
+          (i > 0 ? '<button class="btn" id="undo-btn">← Undo last lesson</button>' : '') +
+          '<button class="btn primary" id="done-btn">Mark finished ✓</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="note">Stuck for more than 30 minutes? Note the question, move on, and come back tomorrow. Being stuck is normal; staying stuck is the only mistake.</div>';
+
+    document.getElementById("done-btn").onclick = function () {
+      done[i] = true; saveProgress(); renderAll(); window.scrollTo(0, 0);
+    };
+    var ub = document.getElementById("undo-btn");
+    if (ub) ub.onclick = function () { done[i - 1] = false; saveProgress(); renderAll(); window.scrollTo(0, 0); };
+  }
+
+  function renderPlan() {
+    var cur = firstUndone();
+    var curStage = cur === -1 ? STAGES.length - 1 : L[cur].s;
+    var html = "";
+    STAGES.forEach(function (st, si) {
+      var lessons = L.map(function (l, i) { return { l: l, i: i }; }).filter(function (x) { return x.l.s === si; });
+      var doneCount = lessons.filter(function (x) { return done[x.i]; }).length;
+      html += '<div class="stage' + (si === curStage ? ' open' : '') + '" data-stage="' + si + '">' +
+        '<div class="stage-head"><div><div class="stage-name">' + esc(st.name) + '</div>' +
+        '<div class="stage-weeks">' + esc(st.weeks) + '</div></div>' +
+        '<div class="stage-count">' + doneCount + '/' + lessons.length + '</div></div>' +
+        '<div class="stage-body"><div class="note">' + esc(st.note) + '</div>';
+      var lastWeek = null;
+      lessons.forEach(function (x) {
+        if (x.l.w !== lastWeek) { html += '<div class="week-head">Week ' + x.l.w + '</div>'; lastWeek = x.l.w; }
+        html += '<div class="row' + (done[x.i] ? ' done' : '') + '" data-i="' + x.i + '">' +
+          '<div class="box">✓</div><div><div class="row-title">' + esc(x.l.t) + '</div>' +
+          '<div class="row-sub">' + x.l.min + ' min</div></div></div>';
+      });
+      html += '</div></div>';
+    });
+    var box = document.getElementById("view-plan");
+    box.innerHTML = html;
+
+    box.querySelectorAll(".stage-head").forEach(function (h) {
+      h.onclick = function () { h.parentNode.classList.toggle("open"); };
+    });
+    box.querySelectorAll(".row").forEach(function (row) {
+      row.onclick = function () {
+        var i = parseInt(row.getAttribute("data-i"), 10);
+        done[i] = !done[i]; saveProgress(); renderAll();
+      };
+    });
+  }
+
+  function renderSetup() {
+    document.getElementById("view-setup").innerHTML =
+      '<div class="card"><h2>Install these once</h2>' +
+        resHTML(["wsl", "vscode", "dockerstart", "kind", "tf", "awscli", "shellcheck", "trivy"]) +
+      '</div>' +
+      '<div class="card warn-box"><h2>Money rules — read before week 9</h2>' +
+        '<ul>' +
+        '<li><strong>Before creating anything in AWS:</strong> turn on MFA, create a budget alert at €10, €25 and €50.</li>' +
+        '<li>Delete everything at the end of each session. <code>terraform destroy</code> or delete in the console.</li>' +
+        '<li>The three things that quietly cost money: NAT Gateways, idle load balancers, and EKS clusters. Never leave them overnight.</li>' +
+        '<li>Check the billing page every single Sunday. Every one.</li>' +
+        '<li>Weeks 1–8 cost almost nothing: a small VPS (~€5/month) and a domain (~€10/year). Everything else in that period is free.</li>' +
+        '</ul>' +
+      '</div>' +
+      '<div class="card"><h2>How to study</h2>' +
+        '<ul>' +
+        '<li><strong>One lesson per day.</strong> Not two. Consistency beats intensity, and burnout is the main reason people quit at week 6.</li>' +
+        '<li><strong>Type every command yourself.</strong> Copy-paste teaches nothing.</li>' +
+        '<li><strong>Break things on purpose.</strong> The fix is where the learning is.</li>' +
+        '<li><strong>Write notes into your GitHub repo daily.</strong> By week 16 that repo is your CV.</li>' +
+        '<li><strong>If you miss a day, just continue.</strong> Don\'t try to catch up — that\'s how people quit.</li>' +
+        '</ul>' +
+      '</div>' +
+      '<div class="card"><h2>Extra practice (optional)</h2>' +
+        resHTML(["killercoda", "roadmapproj", "devopscube", "kodekloud", "workshops", "skillbuilder"]) +
+      '</div>' +
+      '<div class="card"><h2>If you want the certification</h2>' +
+        '<p class="goal">Optional. Do it after week 12, once the concepts are real. The exam code changes over time — check AWS\'s own site before paying for any course or booking.</p>' +
+        resHTML(["saaguide", "cantrill", "skillbuilder", "awstraining"]) +
+      '</div>';
+  }
+
+  function renderAll() { renderProgress(); renderToday(); renderPlan(); }
+
+  /* ---------- 5. INIT ---------- */
+  document.querySelectorAll(".tab").forEach(function (t) {
+    t.onclick = function () {
+      document.querySelectorAll(".tab").forEach(function (x) { x.classList.remove("on"); });
+      t.classList.add("on");
+      ["today", "plan", "setup"].forEach(function (v) {
+        document.getElementById("view-" + v).style.display = (v === t.getAttribute("data-view")) ? "block" : "none";
+      });
+      window.scrollTo(0, 0);
+    };
+  });
+
+  renderSetup();
+  loadProgress(renderAll);
+})();
+</script>
+</div>

@@ -1,0 +1,16 @@
+{
+  "name": "Cloud Path",
+  "short_name": "Cloud Path",
+  "description": "A 16-week path from zero to junior DevOps.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0e0f",
+  "theme_color": "#0a0e0f",
+  "icons": [
+    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

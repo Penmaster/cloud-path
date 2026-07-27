@@ -1,7 +1,7 @@
 /* Cloud Path service worker — precache the whole app, serve it offline.
    Bump CACHE whenever any precached file changes. */
 
-const CACHE = 'cloud-path-893a68d361c8';
+const CACHE = 'cloud-path-9c6fc8723169';
 
 const SHELL = [
   './',

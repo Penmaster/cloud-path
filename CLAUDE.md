@@ -93,7 +93,13 @@ comment. Approved on 2026-07-27 after a gap analysis against current job
 adverts found Python absent from all 80 lessons despite being a commonly
 required skill.
 
-Rules for it:
+A second card, **"On a Windows laptop"**, sits near the top of Setup for the
+same reason: lesson 1 says "Windows: install WSL with Ubuntu" and never mentions
+Windows again, which leaves a beginner free to install Docker and Terraform in
+PowerShell instead of inside Ubuntu. Its two extra links live in the `WINDOWS`
+array in `dist/app.js`.
+
+Rules for both:
 - It is an **appendix, not part of the path.** It must stay at the bottom of
   Setup, must stay optional, and must never appear on Today or Plan.
 - It must never affect lesson count, progress, or the streak.

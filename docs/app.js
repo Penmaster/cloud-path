@@ -20,6 +20,15 @@
      after week 16 so they cannot make the main path feel longer.
      Ordered by how much they move the needle. All free, all verified live.
      ---------------------------------------------------------------------- */
+  /* Also not from the source file. Lesson 1 says "Windows: install WSL with
+     Ubuntu" and every lesson after it assumes a Linux terminal — which WSL
+     provides. These cover the one way that reliably goes wrong: installing the
+     tools on Windows instead of inside Ubuntu. */
+  var WINDOWS = [
+    { label: 'VS Code — working inside WSL', url: 'https://code.visualstudio.com/docs/remote/wsl', type: 'read', cost: 'free' },
+    { label: 'Docker Desktop with the WSL 2 backend', url: 'https://docs.docker.com/desktop/features/wsl/', type: 'read', cost: 'free' },
+  ];
+
   var AFTER = [
     { label: 'Automate the Boring Stuff with Python', url: 'https://automatetheboringstuff.com/', type: 'course', cost: 'free' },
     { label: 'The official Python tutorial', url: 'https://docs.python.org/3/tutorial/', type: 'read', cost: 'free' },
@@ -256,6 +265,21 @@
       '<div class="card">' +
         '<h2 class="card-title">Install these once</h2>' +
         resourcesByKey(['wsl', 'vscode', 'dockerstart', 'kind', 'tf', 'awscli', 'shellcheck', 'trivy']) +
+      '</div>' +
+
+      '<div class="card">' +
+        '<h2 class="card-title">On a Windows laptop</h2>' +
+        '<p class="prose">Everything in this course works on Windows. Lesson 1 has you install ' +
+          '<strong>WSL with Ubuntu</strong>, which gives you a real Linux terminal — after that every ' +
+          'lesson works exactly as written.</p>' +
+        '<p class="prose"><strong>One rule, and it is the thing that trips people up:</strong> ' +
+          'do everything inside the Ubuntu terminal, never PowerShell. Install Docker, Terraform, the ' +
+          'AWS CLI, ShellCheck and Trivy <em>inside Ubuntu</em> too. Install them on Windows instead and ' +
+          'the commands in the lessons will not match what you type, and you will not understand why.</p>' +
+        '<p class="prose" style="margin-bottom:var(--s4)">VS Code is the exception — install it on ' +
+          'Windows normally, then add its WSL extension so it edits the files inside Ubuntu.</p>' +
+        resourcesByKey(['wsl']) +
+        WINDOWS.map(resourceHTML).join('') +
       '</div>' +
 
       '<div class="card card--warn">' +

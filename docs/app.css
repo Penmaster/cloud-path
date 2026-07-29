@@ -333,6 +333,8 @@ code {
   gap: var(--s2);
   margin-top: var(--s6);
 }
+.actions--row { flex-direction: row; margin-top: var(--s4); }
+.actions--row .btn { flex: 1; }
 
 .btn {
   min-height: var(--tap-min);
@@ -478,6 +480,16 @@ code {
 .prose strong { color: var(--text); font-weight: 600; }
 
 .card--warn { border-color: var(--accent-soft); }
+
+/* Retrieval prompt — quieter than the lesson it sits beneath. It is a nudge,
+   never a test, so it must not compete with the day's actual work. */
+.card--recall { background: transparent; border-style: dashed; }
+.recall-src {
+  font-size: var(--t-sm);
+  color: var(--text-faint);
+  margin: 0 0 var(--s3);
+}
+.recall-ask { margin: var(--s4) 0 0; }
 
 .field {
   width: 100%;

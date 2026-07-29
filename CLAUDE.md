@@ -75,6 +75,8 @@ Three screens: **Today**, **Plan**, **Setup**. Today is the landing screen.
 In scope:
 - Progress: which of the 80 lessons are complete.
 - Streak counter (current + longest).
+- **Retrieval practice** — one prompt a day, on Today, beneath the lesson.
+- **Gate warnings** on the four lessons that block everything after them.
 - Backup code: one button to copy progress out, one field to paste it back,
   plus a plain-English line explaining what it is for.
 - One line in Setup telling him to set a repeating daily alarm on his phone.
@@ -111,6 +113,41 @@ Also added: an "About the time estimates" card, stating plainly that project
 days run long and that this is not failure. This exists because the source
 file's `minutes` values are optimistic for the project lessons, and those
 values are displayed as-is and must not be recalculated (see §4).
+
+### Retrieval practice — approved addition
+
+Added 2026-07-29 after a pedagogical review found two defects: only 18% of the
+80 completion criteria require an *explanation* rather than "it worked", and
+that proportion **falls as difficulty rises** (5/15 in stage 1, 1/20 in stage
+5). Separately, REVIEW lessons stop after week 9, so weeks 10–16 contain no
+spaced retrieval at all.
+
+The fix invents **no content**. It resurfaces a previously completed lesson's
+own `doneWhen` criterion and asks whether he can still do it. Logic lives in
+`store.js` (`pickReview` / `recordReview`), tested in `tools/test-store.mjs`.
+
+Rules, all of which exist to stop it becoming a quiz:
+- **One prompt per day, maximum.** Several can be due at once; marching through
+  them would turn a nudge into a drill. Enforced by `state.recallDay`.
+- Never scored. No percentage, no right/wrong tally, no history view.
+- **Must not touch progress, the lesson count, or the streak.** Answering
+  "not really" is not a penalty and must never read as one.
+- Skips the two most recent completions — asking about yesterday tests nothing.
+- Expanding intervals (2/4/8/16/32 days). "Not really" returns it tomorrow.
+- Backup codes carry progress only, not the review schedule. Losing the
+  schedule is trivial; losing 60 completed lessons is not. Do not bloat the
+  code to fix this.
+
+### Gate lessons
+
+Four lessons stand up infrastructure everything later needs: L11, L12, L13
+(server, SSH, nginx) and L41 (AWS account). On these, the standard "stuck 30
+minutes? move on and come back tomorrow" note is replaced, because moving on is
+impossible and telling him otherwise sets him up to fail.
+
+The `GATES` map in `app.js` is keyed by id **and** checked against the expected
+title, so if the curriculum ever changes the note disappears rather than
+attaching itself to the wrong lesson.
 
 ### No daily notification
 

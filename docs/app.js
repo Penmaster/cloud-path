@@ -190,10 +190,73 @@
         '</div>' +
       '</article>' +
 
-      '<div class="card">' +
-        '<p class="prose">Stuck for more than 30 minutes? Note the question, move on, and come back ' +
-          'tomorrow. Being stuck is normal; staying stuck is the only mistake.</p>' +
-      '</div>';
+      (isGate(id)
+        ? '<div class="card card--warn">' +
+            '<p class="prose"><strong>This one is a gate.</strong> Everything after it needs this ' +
+              'working, so the usual advice — move on and come back — does not apply here. ' +
+              'Take as many days as it needs. Getting stuck for a week on this is normal and is not ' +
+              'a sign you should stop.</p>' +
+          '</div>'
+        : '<div class="card">' +
+            '<p class="prose">Stuck for more than 30 minutes? Note the question, move on, and come back ' +
+              'tomorrow. Being stuck is normal; staying stuck is the only mistake.</p>' +
+          '</div>') +
+
+      renderRecall();
+  }
+
+  /* ---------- gates ------------------------------------------------------- */
+
+  /* Four lessons stand up infrastructure everything later depends on. The
+     "move on and come back tomorrow" advice is actively wrong for them.
+     Matched on title as well as id, so that if the source curriculum ever
+     changes the note quietly disappears rather than landing on a wrong lesson. */
+  var GATES = {
+    10: 'What a server actually is',
+    11: 'SSH — connecting safely',
+    12: 'Install a web server',
+    40: 'AWS account — set up safely FIRST',
+  };
+
+  function isGate(id) {
+    return GATES[id] !== undefined && C.lessons[id] && C.lessons[id].title === GATES[id];
+  }
+
+  /* ---------- retrieval practice ------------------------------------------ */
+
+  var recallId = null;
+
+  /**
+   * Resurfaces the completion criterion of an earlier lesson and asks whether
+   * he can still do it. The prompt is the curriculum's own wording — nothing
+   * here is invented, and nothing is scored.
+   */
+  function renderRecall() {
+    recallId = Store.pickReview(state);
+    if (recallId === null) return '';
+
+    var lesson = C.lessons[recallId];
+    return '<div class="card card--recall">' +
+      '<h2 class="card-title">Still got it?</h2>' +
+      '<p class="recall-src">Week ' + lesson.week + ' · ' + esc(lesson.title) + '</p>' +
+      '<div class="block block--criterion">' + rich(lesson.doneWhen) + '</div>' +
+      '<p class="prose recall-ask">Right now, without looking it up — could you still do that?</p>' +
+      '<div class="actions actions--row">' +
+        '<button class="btn" data-act="recall-no">Not really</button>' +
+        '<button class="btn" data-act="recall-yes">Yes</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function answerRecall(remembered) {
+    if (recallId === null) return;
+    var lesson = C.lessons[recallId];
+    Store.recordReview(state, recallId, remembered);
+    persist();
+    renderToday();
+    toast(remembered
+      ? 'Good — that one comes back later'
+      : 'Worth a look: week ' + lesson.week + ', ' + lesson.title);
   }
 
   /* ---------- plan -------------------------------------------------------- */
@@ -462,6 +525,8 @@
       else if (act === 'copy-code') copyCode();
       else if (act === 'restore') restoreCode();
       else if (act === 'reset') resetAll();
+      else if (act === 'recall-yes') answerRecall(true);
+      else if (act === 'recall-no') answerRecall(false);
       return;
     }
 

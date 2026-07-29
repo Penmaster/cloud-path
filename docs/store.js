@@ -38,8 +38,27 @@ window.Store = (function () {
 
   /* ---------- state ------------------------------------------------------ */
 
+  /**
+   * Spacing ladder, in days. A lesson answered "still got it" moves up a rung
+   * and comes back later; "not really" drops it to the bottom and it returns
+   * tomorrow. Standard expanding-interval retrieval practice.
+   */
+  var LADDER = [2, 4, 8, 16, 32];
+
+  /** How many of the most recent completions are too fresh to be worth asking. */
+  var TOO_FRESH = 2;
+
   function emptyState() {
-    return { done: [], streak: { current: 0, longest: 0, last: null } };
+    return {
+      done: [],
+      streak: { current: 0, longest: 0, last: null },
+      // lessonId -> { seen: 'YYYY-MM-DD', level: 0..LADDER.length-1 }
+      review: {},
+      // The day the last recall was answered. At most one per day — several
+      // prompts can be due at once, and marching through them would turn a
+      // gentle nudge into a drill.
+      recallDay: null,
+    };
   }
 
   /** Coerces anything into a valid state. Never throws, never returns null. */
@@ -68,6 +87,23 @@ window.Store = (function () {
     if (state.streak.longest < state.streak.current) {
       state.streak.longest = state.streak.current;
     }
+
+    if (isDayKey(raw.recallDay)) state.recallDay = raw.recallDay;
+
+    if (raw.review && typeof raw.review === 'object' && !Array.isArray(raw.review)) {
+      Object.keys(raw.review).forEach(function (key) {
+        var id = Number(key);
+        var entry = raw.review[key];
+        if (!Number.isInteger(id) || id < 0 || id >= max) return;
+        if (!entry || typeof entry !== 'object') return;
+        if (!isDayKey(entry.seen)) return;
+        var level = Number.isInteger(entry.level) ? entry.level : 0;
+        state.review[id] = {
+          seen: entry.seen,
+          level: Math.min(Math.max(level, 0), LADDER.length - 1),
+        };
+      });
+    }
     return state;
   }
 
@@ -82,7 +118,13 @@ window.Store = (function () {
   /** Returns true when the write landed. False means storage is unavailable. */
   function save(state) {
     try {
-      window.localStorage.setItem(KEY, JSON.stringify({ v: 1, done: state.done, streak: state.streak }));
+      window.localStorage.setItem(KEY, JSON.stringify({
+        v: 1,
+        done: state.done,
+        streak: state.streak,
+        review: state.review,
+        recallDay: state.recallDay,
+      }));
       return true;
     } catch (e) {
       return false;
@@ -186,9 +228,66 @@ window.Store = (function () {
     return sanitise({ done: done, streak: { current: current, longest: longest, last: last } });
   }
 
+  /* ---------- retrieval practice ----------------------------------------- */
+
+  /**
+   * Chooses one already-completed lesson worth re-checking today, or null when
+   * nothing is due. The most overdue wins; ties go to the earliest lesson,
+   * because the oldest material has decayed longest.
+   *
+   * The newest few completions are skipped — asking whether you remember
+   * something you did yesterday tests nothing.
+   */
+  function pickReview(state, today) {
+    var key = today || dayKey();
+    if (state.recallDay === key) return null;
+
+    var eligible = state.done.slice(0, Math.max(0, state.done.length - TOO_FRESH));
+
+    var best = null;
+    var bestOverdue = -1;
+
+    eligible.forEach(function (id) {
+      var entry = state.review[id];
+      var overdue;
+      if (!entry) {
+        // Never reviewed. Treat as long overdue so early lessons surface first.
+        overdue = Number.MAX_SAFE_INTEGER - id;
+      } else {
+        var elapsed = daysBetween(entry.seen, key);
+        var interval = LADDER[entry.level];
+        if (elapsed < interval) return;
+        overdue = elapsed - interval;
+      }
+      if (overdue > bestOverdue) {
+        bestOverdue = overdue;
+        best = id;
+      }
+    });
+
+    return best;
+  }
+
+  /**
+   * Records an honest self-assessment. `remembered` true moves the lesson up
+   * the spacing ladder; false drops it to the bottom so it returns tomorrow.
+   */
+  function recordReview(state, id, remembered, today) {
+    var key = today || dayKey();
+    var entry = state.review[id] || { level: 0 };
+    var level = remembered ? Math.min(entry.level + 1, LADDER.length - 1) : 0;
+    state.review[id] = { seen: key, level: level };
+    state.recallDay = key;
+    return state;
+  }
+
   return {
     load: load,
     save: save,
+    pickReview: pickReview,
+    recordReview: recordReview,
+    LADDER: LADDER,
+    TOO_FRESH: TOO_FRESH,
     storageWorks: storageWorks,
     emptyState: emptyState,
     sanitise: sanitise,

@@ -146,6 +146,45 @@ Every entry is free and was verified live. If you add to it, keep both true.
 
 ---
 
+## Testing yourself
+
+Beneath the day's lesson, Today sometimes shows a **"Still got it?"** card: the
+completion criterion from a lesson he finished weeks ago, and one question —
+*could you still do that, right now, without looking it up?*
+
+The prompts are **the curriculum's own words**. Nothing is invented and there is
+no question bank. The 80 lessons already contain 80 author-written criteria;
+they were simply being used once and never seen again.
+
+Two answers. "Yes" pushes the lesson further out — 2, 4, 8, 16, then 32 days.
+"Not really" brings it back tomorrow and names the lesson worth revisiting.
+
+Constraints that keep it a nudge rather than a test:
+
+- **One prompt a day, maximum**, however many are overdue
+- Nothing is scored — no percentage, no tally, no history
+- **It cannot affect progress, the lesson count or the streak.** "Not really" is
+  information, not a penalty
+- The two most recent completions are skipped; asking about yesterday tests
+  nothing
+
+This exists because only 18% of the course's completion criteria require an
+*explanation* rather than just "it worked" — and that proportion falls as the
+material gets harder. Spaced retrieval over the author's own criteria closes
+that gap without adding a single lesson.
+
+Backup codes carry progress only, not the review schedule. Restoring on a new
+phone keeps all 80 completion flags and the streak, and simply starts the review
+schedule again.
+
+## Gate lessons
+
+Four lessons stand up infrastructure that everything after them depends on:
+getting a Linux server, SSH, nginx, and the AWS account. On those, the usual
+"stuck for 30 minutes? move on and come back tomorrow" advice is replaced —
+moving on is impossible, and saying otherwise sets a beginner up to fail at the
+exact point where attrition concentrates.
+
 ## Deliberate limitations
 
 **No notifications.** A home-screen web app has no reliable API for scheduled

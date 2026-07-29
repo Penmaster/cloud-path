@@ -179,6 +179,129 @@ check(
   memory.clear();
 }
 
+/* ---------- retrieval practice ------------------------------------------ */
+
+const doneUpTo = (n) => Store.sanitise({ done: Array.from({ length: n }, (_, i) => i) });
+
+{
+  // Nothing to review until there is something older than the fresh window.
+  check('no review when nothing is completed', Store.pickReview(freshState(), '2026-07-27'), null);
+  check('no review when all completions are too fresh', Store.pickReview(doneUpTo(2), '2026-07-27'), null);
+  check('first review appears once past the fresh window', Store.pickReview(doneUpTo(3), '2026-07-27'), 0);
+}
+
+const addDays = (key, n) => {
+  const [y, m, d] = key.split('-').map(Number);
+  const dt = new Date(y, m - 1, d + n);
+  const p = (x) => String(x).padStart(2, '0');
+  return `${dt.getFullYear()}-${p(dt.getMonth() + 1)}-${p(dt.getDate())}`;
+};
+
+{
+  // Oldest unreviewed material comes first — it has decayed longest.
+  const s = doneUpTo(10);
+  check('picks the earliest unreviewed lesson', Store.pickReview(s, '2026-07-27'), 0);
+  Store.recordReview(s, 0, true, '2026-07-27');
+  check('then the next earliest, the following day', Store.pickReview(s, '2026-07-28'), 1);
+}
+
+{
+  // At most one prompt a day, however many are overdue.
+  const s = doneUpTo(10); // eight are eligible and all are unreviewed
+  check('one is offered', Store.pickReview(s, '2026-07-27'), 0);
+  Store.recordReview(s, 0, true, '2026-07-27');
+  check('answering closes the day', Store.pickReview(s, '2026-07-27'), null);
+  check('a new one appears tomorrow', Store.pickReview(s, '2026-07-28'), 1);
+}
+
+{
+  // The two newest completions are never asked about, on any day.
+  const s = doneUpTo(10);
+  let day = '2026-07-27';
+  const picked = new Set();
+  for (let i = 0; i < 60; i++) {
+    const id = Store.pickReview(s, day);
+    if (id !== null) { picked.add(id); Store.recordReview(s, id, true, day); }
+    day = addDays(day, 1);
+  }
+  check('the freshest two never surface', [picked.has(8), picked.has(9)], [false, false]);
+  check('every older lesson does surface', [...picked].sort((a, b) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
+}
+
+{
+  // Spacing: answered today, not due tomorrow, due after the interval.
+  const s = doneUpTo(5);
+  Store.recordReview(s, 0, true, '2026-07-27'); // level 1 -> interval 4 days
+  Store.recordReview(s, 1, true, '2026-07-27');
+  Store.recordReview(s, 2, true, '2026-07-27');
+  check('nothing due the same day', Store.pickReview(s, '2026-07-27'), null);
+  check('still not due after 3 days', Store.pickReview(s, '2026-07-30'), null);
+  check('due once the interval passes', Store.pickReview(s, '2026-07-31'), 0);
+}
+
+{
+  // Anything never reviewed outranks anything merely overdue, however overdue.
+  const s = doneUpTo(4); // eligible: 0 and 1
+  Store.recordReview(s, 0, true, '2026-01-01'); // wildly overdue, but seen
+  check('unreviewed beats overdue', Store.pickReview(s, '2026-07-27'), 1);
+}
+
+{
+  // The ladder expands on success and collapses on failure.
+  // Only lesson 0 is eligible here, so nothing else can win the pick.
+  const s = doneUpTo(3);
+  Store.recordReview(s, 0, true, '2026-07-01');
+  check('one success -> level 1', s.review[0].level, 1);
+  Store.recordReview(s, 0, true, '2026-07-05');
+  check('two successes -> level 2', s.review[0].level, 2);
+  Store.recordReview(s, 0, false, '2026-07-10');
+  check('an honest "no" resets to level 0', s.review[0].level, 0);
+  check('not due the very next day', Store.pickReview(s, '2026-07-11'), null);
+  check('and it returns after the shortest interval', Store.pickReview(s, '2026-07-12'), 0);
+}
+
+{
+  const s = doneUpTo(5);
+  for (let i = 0; i < 12; i++) Store.recordReview(s, 0, true, '2026-07-27');
+  check('level is capped at the top of the ladder', s.review[0].level, Store.LADDER.length - 1);
+}
+
+{
+  // Among lessons that have all been seen, the most overdue wins.
+  const s = doneUpTo(4); // eligible: 0 and 1, both reviewed below
+  Store.recordReview(s, 0, true, '2026-07-20');  // level 1, interval 4 -> 4 days overdue
+  Store.recordReview(s, 1, false, '2026-07-26'); // level 0, interval 2 -> due exactly now
+  check('most overdue wins', Store.pickReview(s, '2026-07-28'), 0);
+}
+
+check('sanitise handles a missing review map', Store.sanitise({ done: [1] }).review, {});
+check('sanitise handles review as an array', Store.sanitise({ done: [1], review: [] }).review, {});
+check('sanitise drops out-of-range review ids', Store.sanitise({ review: { 999: { seen: '2026-07-27', level: 1 } } }).review, {});
+check('sanitise drops review entries with a bad date', Store.sanitise({ review: { 1: { seen: 'nope', level: 1 } } }).review, {});
+check(
+  'sanitise clamps an out-of-range level',
+  Store.sanitise({ review: { 1: { seen: '2026-07-27', level: 99 } } }).review[1].level,
+  Store.LADDER.length - 1,
+);
+
+{
+  const s = doneUpTo(5);
+  Store.recordReview(s, 0, true, '2026-07-27');
+  Store.save(s);
+  check('review state survives save then load', Store.load().review, s.review);
+  memory.clear();
+}
+
+{
+  // Backup codes deliberately carry progress only. Losing the review schedule
+  // is trivial; losing 60 completed lessons is not.
+  const s = doneUpTo(5);
+  Store.recordReview(s, 0, true, '2026-07-27');
+  const back = Store.decode(Store.encode(s));
+  check('restore keeps the lessons', back.done.length, 5);
+  check('restore starts the review schedule fresh', back.review, {});
+}
+
 /* ---------- report ------------------------------------------------------ */
 
 if (failures.length > 0) {
